@@ -38,6 +38,26 @@ RegisterCommand('spawnpedradius', function(_, args)
     TriggerServerEvent('PedInteraction:spawnpedradius', pedAmount)
 end)
 
+RegisterCommand('explodepeds', function(_, args)
+    local pedRadius = tonumber(args[1])
+
+    if not pedRadius then 
+        TriggerEvent('chat:addMessage', {
+            args = { 'Invalid radius. Please input a number', },
+        })
+        return
+    end 
+
+    if pedRadius <= 0 then
+        TriggerClientEvent('chat:addMessage', playerId {
+            args = { 'Radius must be greater than 0', },
+        })
+        return
+    end
+
+    TriggerServerEvent('PedInteraction:explodepeds', pedRadius)
+end)
+
 RegisterNetEvent('PedInteraction:spawnline')
 AddEventHandler('PedInteraction:spawnline', function(pedAmount)
     local playerPed = PlayerPedId()
@@ -133,24 +153,26 @@ AddEventHandler('PedInteraction:spawnradius', function(pedAmount)
     end
 end)
 
+RegisterNetEvent('PedInteraction:explode')
+AddEventHandler('PedInteraction:explode', function(pedRadius)
+    local playerPed = PlayerPedId()
+    local playerPos = GetEntityCoords()
+    local peds = GetGamePool('CPed')
 
-RegisterCommand('explodepeds', function(_, args)
-    local pedRadius = args[1]
+    for i = 1, #peds do
+        local ped = peds[i]
 
-    if not pedRadius then 
-        TriggerEvent('chat:addMessage', {
-            args = { 'Invalid radius. Please input a number', },
-        })
-        return
-    end 
+        if ped ~= playerPed and not IsPedAPlayer(ped) then
+            local pedPos = GetEntityCoords(ped)
+            local distance = #(playerPos - pedPos)
 
-    if pedRadius <= 0 then
-        TriggerClientEvent('chat:addMessage', playerId {
-            args = { 'Radius must be greater than 0', },
-        })
-        return
+            if distance <= pedRadius * 1000 then
+                local xPos = pedPos.x
+                local yPos = pedPos.y
+                local zPos = pedPos.z
+                AddExplosion(xPos, yPos, zPos, 8, 2, true, false, 0)
+                SetEntityHealth(ped, 0)
+            end
+        end
     end
-
-    TriggerServerEvent('PedInteraction:explodepeds', pedRadius)
 end)
-
