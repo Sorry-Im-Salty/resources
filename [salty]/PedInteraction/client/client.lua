@@ -134,7 +134,7 @@ AddEventHandler('PedInteraction:spawnradius', function(pedAmount)
 end)
 
 
-RegisterCommand('explodeped', function(_, args)
+RegisterCommand('explodepeds', function(_, args)
     local pedRadius = args[1]
 
     if not pedRadius then 
@@ -144,6 +144,13 @@ RegisterCommand('explodeped', function(_, args)
         return
     end 
 
-    TriggerServerEvent('PedInteraction:explodeped', pedRadius)
+    if pedRadius <= 0 then
+        TriggerClientEvent('chat:addMessage', playerId {
+            args = { 'Radius must be greater than 0', },
+        })
+        return
+    end
+
+    TriggerServerEvent('PedInteraction:explodepeds', pedRadius)
 end)
 

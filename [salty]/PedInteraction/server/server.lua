@@ -1,5 +1,4 @@
-RegisterNetEvent('PedInteraction:spawnpedline')
-AddEventHandler('PedInteraction:spawnpedline', function(pedAmount)
+RegisterNetEvent('PedInteraction:spawnpedline', function(pedAmount)
     local playerId = source
     local pedNumber = tonumber(pedAmount)
 
@@ -13,15 +12,9 @@ RegisterNetEvent('PedInteraction:spawnpedradius', function(pedAmount)
     TriggerClientEvent('PedInteraction:spawnradius', playerId, pedNumber)
 end)
 
-RegisterNetEvent('PedInteraction:explodeped', function(pedRadius)
+RegisterNetEvent('PedInteraction:explodepeds', function(pedRadius)
     local playerId = source
     local radius = tonumber(pedRadius)
 
-    if radius <= 0 then
-        TriggerClientEvent('chat:addMessage', playerId {
-            args = { 'Radius must be greater than 0', },
-        })
-
-        return
-    end
+    TriggerClientEvent('PedInteraction:explode', playerId, radius)
 end)
