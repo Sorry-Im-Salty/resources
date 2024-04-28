@@ -6,6 +6,13 @@ RegisterCommand('spawnpedline', function(_, args)
             args = { 'Invalid ped amount. Please input a number', },
         })
         return
+    end
+
+    if pedAmount <= 0 or pedAmount >= 500 then
+        TriggerEvent('chat:addMessage', {
+            args = { 'Number of peds must be greater than 0 and less than 500', },
+        })
+        return
     end 
 
     TriggerServerEvent('PedInteraction:spawnpedline', pedAmount)
@@ -17,6 +24,13 @@ RegisterCommand('spawnpedradius', function(_, args)
     if not pedAmount then
         TriggerEvent('chat:addMessage', {
             args = { 'Invalid ped amount. Please input a number', },
+        })
+        return
+    end 
+
+    if pedAmount <= 0 or pedAmount >= 500 then
+        TriggerEvent('chat:addMessage', {
+            args = { 'Number of peds must be greater than 0 and less than 500', },
         })
         return
     end 
