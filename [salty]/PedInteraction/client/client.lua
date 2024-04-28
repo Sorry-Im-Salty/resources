@@ -1,4 +1,4 @@
-RegisterCommand('spawnped', function(_, args)
+RegisterCommand('spawnpedline', function(_, args)
     local pedAmount = tonumber(args[1])
 
     if not pedAmount then
@@ -8,24 +8,11 @@ RegisterCommand('spawnped', function(_, args)
         return
     end 
 
-    TriggerServerEvent('PedInteraction:spawnped', pedAmount)
+    TriggerServerEvent('PedInteraction:spawnpedline', pedAmount)
 end)
 
-RegisterCommand('explodeped', function(_, args)
-    local pedRadius = args[1]
-
-    if not pedRadius then 
-        TriggerEvent('chat:addMessage', {
-            args = { 'Invalid radius. Please input a number', },
-        })
-        return
-    end 
-
-    TriggerServerEvent('PedInteraction:explodeped', pedRadius)
-end)
-
-RegisterNetEvent('PedInteraction:spawn')
-AddEventHandler('PedInteraction:spawn', function(pedAmount)
+RegisterNetEvent('PedInteraction:spawnline')
+AddEventHandler('PedInteraction:spawnline', function(pedAmount)
     local playerPed = PlayerPedId()
     local spawnPos = GetEntityCoords(playerPed)
 
@@ -64,3 +51,17 @@ AddEventHandler('PedInteraction:spawn', function(pedAmount)
         SetModelAsNoLongerNeeded(model)
     end
 end)
+
+RegisterCommand('explodeped', function(_, args)
+    local pedRadius = args[1]
+
+    if not pedRadius then 
+        TriggerEvent('chat:addMessage', {
+            args = { 'Invalid radius. Please input a number', },
+        })
+        return
+    end 
+
+    TriggerServerEvent('PedInteraction:explodeped', pedRadius)
+end)
+

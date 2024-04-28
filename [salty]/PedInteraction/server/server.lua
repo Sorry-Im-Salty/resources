@@ -1,4 +1,4 @@
-RegisterNetEvent('PedInteraction:spawnped', function(pedAmount)
+RegisterNetEvent('PedInteraction:spawnpedline', function(pedAmount)
     local playerId = source
     local pedNumber = tonumber(pedAmount)
 
@@ -8,8 +8,8 @@ RegisterNetEvent('PedInteraction:spawnped', function(pedAmount)
         })
         return
     end
-    
-    TriggerClientEvent('PedInteraction:spawn', playerId, pedNumber)
+
+    TriggerClientEvent('PedInteraction:spawnline', playerId, pedNumber)
 end)
 
 RegisterNetEvent('PedInteraction:explodeped', function(pedRadius)
