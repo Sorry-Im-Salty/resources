@@ -29,10 +29,6 @@ AddEventHandler('PedInteraction:spawn', function(pedAmount)
     local playerPed = PlayerPedId()
     local spawnPos = GetEntityCoords(playerPed)
 
-    TriggerEvent('chat:addMessage' , {
-        args = {tostring(pedAmount).. ' peds spawning on client',}
-    })
-
     local pedModels = {
         `a_f_y_tourist_01`,
         `a_m_m_business_01`,
@@ -55,12 +51,16 @@ AddEventHandler('PedInteraction:spawn', function(pedAmount)
 
     EnsureModelisLoaded(pedModels)
 
+
+    TriggerEvent('chat:addMessage' , {
+        args = {tostring(pedAmount).. ' peds spawning on client',}
+    })
+
     for i = 1, pedAmount do
         local model = pedModels[math.random(#pedModels)]
-        local ped = CreatePed(0, model, spawnPos.x, spawnPos.y, spawnPos.z, 0, true, false)
+        local ped = CreatePed(0, model, spawnPos.x, spawnPos.y + i, spawnPos.z, 0, true, false)
         SetPedRandomComponentVariation(ped, true)
         SetPedAsNoLongerNeeded(ped)
         SetModelAsNoLongerNeeded(model)
-        i = i + 1
     end
 end)
