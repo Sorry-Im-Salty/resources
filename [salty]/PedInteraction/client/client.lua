@@ -28,6 +28,13 @@ AddEventHandler('PedInteraction:spawnped', function(x, y, z, heading)
 
     local model = pedModels[math.random(#pedModels)]
     local ped = CreatePed(0, model, x, y, z, heading, true, true)
+    
+    if not DoesEntityExist(ped) then
+        TriggerEvent('chat:addMessage' , {
+            args = {'Ped creation failed',}
+        })
+    end
+
     SetPedRandomComponentVariation(ped, true)
     SetPedAsNoLongerNeeded(ped)
     SetModelAsNoLongerNeeded(model)
@@ -46,9 +53,11 @@ end)
 
 ----------------------------------------------------------------------------------------------
 
--- Spawn Peds in a line from the direction the player is facing
+-- Spawn Peds in a line from the direction the camera is facing
 RegisterCommand('spawnpedline', function(_, args)
     local pedAmount = tonumber(args[1])
+    local camRotation = GetGameplayCamRot(2)
+    local camHeading = math.rad(camRotation.z) + math.pi -- Added 180 degrees as it was spawning behind the camera
 
     if not pedAmount then
         TriggerEvent('chat:addMessage', {
@@ -64,7 +73,7 @@ RegisterCommand('spawnpedline', function(_, args)
         return
     end 
 
-    TriggerServerEvent('PedInteraction:spawnpedline', pedAmount)
+    TriggerServerEvent('PedInteraction:spawnpedline', pedAmount, camHeading)
 end)
 
 ----------------------------------------------------------------------------------------------

@@ -1,15 +1,16 @@
 -- Spawn Line
 RegisterServerEvent('PedInteraction:spawnpedline')
-AddEventHandler('PedInteraction:spawnpedline', function(pedAmount)
+AddEventHandler('PedInteraction:spawnpedline', function(pedAmount, camHeading)
     local playerId = source
     local pedNumber = tonumber(pedAmount)
     local spawnPos = GetEntityCoords(GetPlayerPed(playerId))
-    local heading = GetEntityHeading(GetPlayerPed(playerId))
 
     for i = 1, pedNumber do
-        local offsetX = math.cos(math.rad(heading)) * i
-        local offsetY = math.sin(math.rad(heading)) * i
-        TriggerClientEvent('PedInteraction:spawnped', playerId, spawnPos.x + offsetX, spawnPos.y - offsetY, spawnPos.z, heading)
+        local offsetX = math.sin(camHeading) * i
+        local offsetY = math.cos(camHeading) * i
+
+        --print("Offset X: " .. offsetX .. " Offset Y: " .. offsetY)
+        TriggerClientEvent('PedInteraction:spawnped', playerId, spawnPos.x + offsetX, spawnPos.y - offsetY, spawnPos.z, camHeading)
     end
 
     TriggerClientEvent('PedInteraction:spawnnotification', playerId, pedNumber)
