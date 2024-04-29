@@ -159,7 +159,7 @@ end)
 RegisterNetEvent('PedInteraction:explode')
 AddEventHandler('PedInteraction:explode', function(pedRadius)
     local playerPed = PlayerPedId()
-    local playerPos = GetEntityCoords()
+    local playerPos = GetEntityCoords(playerPed)
     local peds = GetGamePool('CPed')
     local explodeCount = 0
 
@@ -169,8 +169,8 @@ AddEventHandler('PedInteraction:explode', function(pedRadius)
         if ped ~= playerPed and not IsPedAPlayer(ped) and not isDead then
             local pedPos = GetEntityCoords(ped)
             local distance = #(playerPos - pedPos)
-
-            if distance <= pedRadius * 1000 then
+            --print("Player Position: " .. tostring(playerPos) .. " | Ped Position: " .. tostring(pedPos) .. " | Distance: " .. tostring(distance))
+            if distance <= pedRadius then
                 local xPos = pedPos.x
                 local yPos = pedPos.y
                 local zPos = pedPos.z
@@ -192,7 +192,7 @@ end)
 RegisterNetEvent('PedInteraction:ignite')
 AddEventHandler('PedInteraction:ignite', function(pedRadius)
     local playerPed = PlayerPedId()
-    local playerPos = GetEntityCoords()
+    local playerPos = GetEntityCoords(playerPed)
     local peds = GetGamePool('CPed')
     local igniteCount = 0
 
@@ -204,7 +204,7 @@ AddEventHandler('PedInteraction:ignite', function(pedRadius)
             local pedPos = GetEntityCoords(ped)
             local distance = #(playerPos - pedPos)
 
-            if distance <= pedRadius * 1000 then
+            if distance <= pedRadius then
                 StartEntityFire(ped)
                 igniteCount = igniteCount + 1
             end
@@ -244,16 +244,7 @@ AddEventHandler('PedInteraction:debug', function(pedRadius)
                         local pedPos = GetEntityCoords(ped)
                         local distance = #(playerPos - pedPos)
                         if distance <= pedRadius * 1000 then
-                            local bHeight = 1
-                            local bWidth = 1
-                            local bDepth = 1
-                            local x1 = pedPos.x - bWidth / 2
-                            local y1 = pedPos.y - bDepth / 2
-                            local z1 = pedPos.z
-                            local x2 = pedPos.x + bWidth / 2
-                            local y2 = pedPos.y + bDepth / 2
-                            local z2 = pedPos.z + bHeight
-                            DrawBox(x1, y1, z1, x2, y2, z2, 255, 0, 0, 150)
+                            DrawMarker(28, pedPos.x, pedPos.y, pedPos.z, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, 255, 0, 0, 100, false, true, 2, false, nil, nil, false)
                             pedAmount = pedAmount + 1
                         end
                     end
