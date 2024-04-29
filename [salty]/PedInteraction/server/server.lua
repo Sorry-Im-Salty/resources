@@ -68,8 +68,8 @@ RegisterNetEvent('PedInteraction:debugped', function(pedRadius)
 
     if not radius or radius < 10 then
         radius = 10
-    elseif radius > 100 then
-        radius = 100
+    elseif radius > 500 then
+        radius = 500
     end
 
     TriggerClientEvent('PedInteraction:debug', playerId, radius)

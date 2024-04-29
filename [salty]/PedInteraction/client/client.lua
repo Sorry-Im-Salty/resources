@@ -225,15 +225,14 @@ AddEventHandler('PedInteraction:debug', function(pedRadius)
     isActive = not isActive
 
     if isActive then
-        local playerPed = PlayerPedId()
-
         TriggerEvent('chat:addMessage' , {
             args = {'Ped debug started',}
         })
 
         CreateThread(function()
             while isActive do
-                local playerPos = GetEntityCoords()
+                local playerPed = PlayerPedId()
+                local playerPos = GetEntityCoords(playerPed)
                 local peds = GetGamePool('CPed')
                 local pedAmount = 1
 
@@ -243,7 +242,7 @@ AddEventHandler('PedInteraction:debug', function(pedRadius)
                     if ped ~= playerPed and not IsPedAPlayer(ped) then
                         local pedPos = GetEntityCoords(ped)
                         local distance = #(playerPos - pedPos)
-                        if distance <= pedRadius * 1000 then
+                        if distance <= pedRadius then
                             DrawMarker(28, pedPos.x, pedPos.y, pedPos.z, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, 255, 0, 0, 100, false, true, 2, false, nil, nil, false)
                             pedAmount = pedAmount + 1
                         end
