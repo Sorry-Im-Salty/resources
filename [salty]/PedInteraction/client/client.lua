@@ -122,6 +122,8 @@ RegisterCommand('explodepeds', function(_, args)
     TriggerServerEvent('PedInteraction:explodepeds', pedRadius)
 end)
 
+----------------------------------------------------------------------------------------------
+
 -- Ignite all NPC Peds in a radius around the player
 RegisterCommand('ignitepeds', function(_, args)
     local pedRadius = tonumber(args[1])
@@ -143,13 +145,17 @@ RegisterCommand('ignitepeds', function(_, args)
     TriggerServerEvent('PedInteraction:ignitepeds', pedRadius)
 end)
 
+----------------------------------------------------------------------------------------------
+
 -- Brings up Ped Debug
 RegisterCommand('debugped', function(_, args)
     local pedRadius = tonumber(args[1])
     TriggerServerEvent('PedInteraction:debugped', pedRadius)
 end)
 
--- Event handler for exploding Peds in a radius
+----------------------------------------------------------------------------------------------
+
+-- Event for exploding Peds in a radius
 RegisterNetEvent('PedInteraction:explode')
 AddEventHandler('PedInteraction:explode', function(pedRadius)
     local playerPed = PlayerPedId()
@@ -180,7 +186,9 @@ AddEventHandler('PedInteraction:explode', function(pedRadius)
 
 end)
 
--- Event handler for igniting Peds in a radius
+----------------------------------------------------------------------------------------------
+
+-- Event for igniting Peds in a radius
 RegisterNetEvent('PedInteraction:ignite')
 AddEventHandler('PedInteraction:ignite', function(pedRadius)
     local playerPed = PlayerPedId()
@@ -208,9 +216,9 @@ AddEventHandler('PedInteraction:ignite', function(pedRadius)
     })
 end)
 
+----------------------------------------------------------------------------------------------
 
-
--- Event handler for ped debug
+-- Event for ped debug
 local isActive = false
 RegisterNetEvent('PedInteraction:debug')
 AddEventHandler('PedInteraction:debug', function(pedRadius)
