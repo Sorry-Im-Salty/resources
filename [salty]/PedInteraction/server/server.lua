@@ -1,10 +1,23 @@
-RegisterNetEvent('PedInteraction:spawnpedline', function(pedAmount)
+-- Spawn Line
+RegisterServerEvent('PedInteraction:spawnpedline')
+AddEventHandler('PedInteraction:spawnpedline', function(pedAmount)
     local playerId = source
     local pedNumber = tonumber(pedAmount)
+    local spawnPos = GetEntityCoords(GetPlayerPed(playerId))
+    local heading = GetEntityHeading(GetPlayerPed(playerId))
 
-    TriggerClientEvent('PedInteraction:spawnline', playerId, pedNumber)
+    for i = 1, pedNumber do
+        local offsetX = math.cos(math.rad(heading)) * i
+        local offsetY = math.sin(math.rad(heading)) * i
+        TriggerClientEvent('PedInteraction:spawnped', playerId, spawnPos.x + offsetX, spawnPos.y - offsetY, spawnPos.z, heading)
+    end
+
+    TriggerClientEvent('PedInteraction:spawnnotification', playerId, pedNumber)
 end)
 
+----------------------------------------------------------------------------------------------
+
+-- Spawn Radius
 RegisterNetEvent('PedInteraction:spawnpedradius', function(pedAmount)
     local playerId = source
     local pedNumber = tonumber(pedAmount)
@@ -12,6 +25,9 @@ RegisterNetEvent('PedInteraction:spawnpedradius', function(pedAmount)
     TriggerClientEvent('PedInteraction:spawnradius', playerId, pedNumber)
 end)
 
+----------------------------------------------------------------------------------------------
+
+-- Explode
 RegisterNetEvent('PedInteraction:explodepeds', function(pedRadius)
     local playerId = source
     local radius = tonumber(pedRadius)
@@ -19,6 +35,9 @@ RegisterNetEvent('PedInteraction:explodepeds', function(pedRadius)
     TriggerClientEvent('PedInteraction:explode', playerId, radius)
 end)
 
+----------------------------------------------------------------------------------------------
+
+-- Ignite
 RegisterNetEvent('PedInteraction:ignitepeds', function(pedRadius)
     local playerId = source
     local radius = tonumber(pedRadius)
@@ -26,6 +45,9 @@ RegisterNetEvent('PedInteraction:ignitepeds', function(pedRadius)
     TriggerClientEvent('PedInteraction:ignite', playerId, radius)
 end)
 
+----------------------------------------------------------------------------------------------
+
+-- Debug
 RegisterNetEvent('PedInteraction:debugped', function(pedRadius)
     local playerId = source
     local radius = tonumber(pedRadius)
