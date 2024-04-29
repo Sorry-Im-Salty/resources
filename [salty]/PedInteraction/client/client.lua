@@ -1,3 +1,4 @@
+-- Spawn Peds in a line from the direction the player is facing
 RegisterCommand('spawnpedline', function(_, args)
     local pedAmount = tonumber(args[1])
 
@@ -18,6 +19,7 @@ RegisterCommand('spawnpedline', function(_, args)
     TriggerServerEvent('PedInteraction:spawnpedline', pedAmount)
 end)
 
+-- Spawn Peds in a radius around player
 RegisterCommand('spawnpedradius', function(_, args)
     local pedAmount = tonumber(args[1])
 
@@ -38,6 +40,7 @@ RegisterCommand('spawnpedradius', function(_, args)
     TriggerServerEvent('PedInteraction:spawnpedradius', pedAmount)
 end)
 
+-- Explode all NPC Peds in a radius around the player
 RegisterCommand('explodepeds', function(_, args)
     local pedRadius = tonumber(args[1])
 
@@ -58,6 +61,28 @@ RegisterCommand('explodepeds', function(_, args)
     TriggerServerEvent('PedInteraction:explodepeds', pedRadius)
 end)
 
+-- Ignite all NPC Peds in a radius around the player
+RegisterCommand('ignitepeds', function(_, args)
+    local pedRadius = tonumber(args[1])
+
+    if not pedRadius then 
+        TriggerEvent('chat:addMessage', {
+            args = { 'Invalid radius. Please input a number', },
+        })
+        return
+    end 
+
+    if pedRadius <= 0 then
+        TriggerClientEvent('chat:addMessage', playerId {
+            args = { 'Radius must be greater than 0', },
+        })
+        return
+    end
+
+    TriggerServerEvent('PedInteraction:ignitepeds', pedRadius)
+end)
+
+-- Event handler for spawning Peds in a line
 RegisterNetEvent('PedInteraction:spawnline')
 AddEventHandler('PedInteraction:spawnline', function(pedAmount)
     local playerPed = PlayerPedId()
@@ -102,6 +127,7 @@ AddEventHandler('PedInteraction:spawnline', function(pedAmount)
     end
 end)
 
+-- Event handler for spawning Peds in a radius
 RegisterNetEvent('PedInteraction:spawnradius')
 AddEventHandler('PedInteraction:spawnradius', function(pedAmount)
     local playerPed = PlayerPedId()
@@ -153,16 +179,18 @@ AddEventHandler('PedInteraction:spawnradius', function(pedAmount)
     end
 end)
 
+-- Event handler for exploding Peds in a radius
 RegisterNetEvent('PedInteraction:explode')
 AddEventHandler('PedInteraction:explode', function(pedRadius)
     local playerPed = PlayerPedId()
     local playerPos = GetEntityCoords()
     local peds = GetGamePool('CPed')
+    local explodeCount = 0
 
     for i = 1, #peds do
         local ped = peds[i]
-
-        if ped ~= playerPed and not IsPedAPlayer(ped) then
+        local isDead = IsPedDeadOrDying(ped, false)
+        if ped ~= playerPed and not IsPedAPlayer(ped) and not isDead then
             local pedPos = GetEntityCoords(ped)
             local distance = #(playerPos - pedPos)
 
@@ -172,7 +200,40 @@ AddEventHandler('PedInteraction:explode', function(pedRadius)
                 local zPos = pedPos.z
                 AddExplosion(xPos, yPos, zPos, 8, 2, true, false, 0)
                 SetEntityHealth(ped, 0)
+                explodeCount = explodeCount + 1
             end
         end
     end
+    TriggerEvent('chat:addMessage' , {
+        args = {explodeCount .. ' peds exploded',}
+    })
+
+end)
+
+-- Event handler for igniting Peds in a radius
+RegisterNetEvent('PedInteraction:ignite')
+AddEventHandler('PedInteraction:ignite', function(pedRadius)
+    local playerPed = PlayerPedId()
+    local playerPos = GetEntityCoords()
+    local peds = GetGamePool('CPed')
+    local igniteCount = 0
+
+    for i = 1, #peds do
+        local ped = peds[i]
+        local isDead = IsPedDeadOrDying(ped, false)
+
+        if ped ~= playerPed and not IsPedAPlayer(ped) and not isDead then
+            local pedPos = GetEntityCoords(ped)
+            local distance = #(playerPos - pedPos)
+
+            if distance <= pedRadius * 1000 then
+                StartEntityFire(ped)
+                igniteCount = igniteCount + 1
+            end
+        end
+    end
+
+    TriggerEvent('chat:addMessage' , {
+        args = {igniteCount .. ' peds ignited',}
+    })
 end)

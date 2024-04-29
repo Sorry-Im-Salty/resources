@@ -18,3 +18,10 @@ RegisterNetEvent('PedInteraction:explodepeds', function(pedRadius)
 
     TriggerClientEvent('PedInteraction:explode', playerId, radius)
 end)
+
+RegisterNetEvent('PedInteraction:ignitepeds', function(pedRadius)
+    local playerId = source
+    local radius = tonumber(pedRadius)
+
+    TriggerClientEvent('PedInteraction:ignite', playerId, radius)
+end)
