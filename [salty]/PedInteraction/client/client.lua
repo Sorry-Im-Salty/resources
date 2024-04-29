@@ -109,7 +109,7 @@ AddEventHandler('PedInteraction:spawnline', function(pedAmount)
         for _, model in ipairs(models) do
             RequestModel(model)
             while not HasModelLoaded(model) do
-                Wait(500)
+                Wait(200)
             end
         end
     end
@@ -155,7 +155,7 @@ AddEventHandler('PedInteraction:spawnradius', function(pedAmount)
         for _, model in ipairs(models) do
             RequestModel(model)
             while not HasModelLoaded(model) do
-                Wait(500)
+                Wait(200)
             end
         end
     end
