@@ -25,3 +25,16 @@ RegisterNetEvent('PedInteraction:ignitepeds', function(pedRadius)
 
     TriggerClientEvent('PedInteraction:ignite', playerId, radius)
 end)
+
+RegisterNetEvent('PedInteraction:debugped', function(pedRadius)
+    local playerId = source
+    local radius = tonumber(pedRadius)
+
+    if not radius or radius < 10 then
+        radius = 10
+    elseif radius > 100 then
+        radius = 100
+    end
+
+    TriggerClientEvent('PedInteraction:debug', playerId, radius)
+end)

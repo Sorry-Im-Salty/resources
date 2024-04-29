@@ -82,6 +82,12 @@ RegisterCommand('ignitepeds', function(_, args)
     TriggerServerEvent('PedInteraction:ignitepeds', pedRadius)
 end)
 
+-- Brings up Ped Debug
+RegisterCommand('debugped', function(_, args)
+    local pedRadius = tonumber(args[1])
+    TriggerServerEvent('PedInteraction:debugped', pedRadius)
+end)
+
 -- Event handler for spawning Peds in a line
 RegisterNetEvent('PedInteraction:spawnline')
 AddEventHandler('PedInteraction:spawnline', function(pedAmount)
@@ -236,4 +242,62 @@ AddEventHandler('PedInteraction:ignite', function(pedRadius)
     TriggerEvent('chat:addMessage' , {
         args = {igniteCount .. ' peds ignited',}
     })
+end)
+
+
+
+-- Event handler for ped debug
+local isActive = false
+RegisterNetEvent('PedInteraction:debug')
+AddEventHandler('PedInteraction:debug', function(pedRadius)
+    isActive = not isActive
+
+    if isActive then
+        local playerPed = PlayerPedId()
+
+        TriggerEvent('chat:addMessage' , {
+            args = {'Ped debug started',}
+        })
+
+        CreateThread(function()
+            while isActive do
+                local playerPos = GetEntityCoords()
+                local peds = GetGamePool('CPed')
+                local pedAmount = 1
+
+                for i = 1, #peds do
+                    local ped = peds[i]
+
+                    if ped ~= playerPed and not IsPedAPlayer(ped) then
+                        local pedPos = GetEntityCoords(ped)
+                        local distance = #(playerPos - pedPos)
+                        if distance <= pedRadius * 1000 then
+                            local bHeight = 1
+                            local bWidth = 1
+                            local bDepth = 1
+                            local x1 = pedPos.x - bWidth / 2
+                            local y1 = pedPos.y - bDepth / 2
+                            local z1 = pedPos.z
+                            local x2 = pedPos.x + bWidth / 2
+                            local y2 = pedPos.y + bDepth / 2
+                            local z2 = pedPos.z + bHeight
+                            DrawBox(x1, y1, z1, x2, y2, z2, 255, 0, 0, 150)
+                            pedAmount = pedAmount + 1
+                        end
+                    end
+                end
+        
+                -- TriggerEvent('chat:addMessage' , {
+                --     args = {'Peds detected in radius: ' .. pedAmount,}
+                -- })
+
+                Wait(2)
+            end
+        end)
+
+    else
+        TriggerEvent('chat:addMessage' , {
+            args = {'Ped debug stopped',}
+        })
+    end
 end)
