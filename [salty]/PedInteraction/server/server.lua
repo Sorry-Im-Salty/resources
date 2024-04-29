@@ -19,11 +19,24 @@ end)
 ----------------------------------------------------------------------------------------------
 
 -- Spawn Radius
-RegisterNetEvent('PedInteraction:spawnpedradius', function(pedAmount)
+RegisterServerEvent('PedInteraction:spawnpedradius')
+AddEventHandler('PedInteraction:spawnpedradius', function(pedAmount)
     local playerId = source
     local pedNumber = tonumber(pedAmount)
+    local spawnPos = GetEntityCoords(GetPlayerPed(playerId))
+    local radius = 10
 
-    TriggerClientEvent('PedInteraction:spawnradius', playerId, pedNumber)
+    for i = 1, pedNumber do
+        local angle = math.random() * 360
+        local radian = math.rad(angle)
+        local randomRadius = math.random() * radius
+        local offsetX = math.sin(radian) * randomRadius
+        local offsetY = math.cos(radian) * randomRadius
+  
+        TriggerClientEvent('PedInteraction:spawnped', playerId, spawnPos.x + offsetX, spawnPos.y - offsetY, spawnPos.z, 0)
+    end
+
+    TriggerClientEvent('PedInteraction:spawnnotification', playerId, pedNumber)
 end)
 
 ----------------------------------------------------------------------------------------------

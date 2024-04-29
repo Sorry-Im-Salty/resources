@@ -99,37 +99,6 @@ RegisterCommand('spawnpedradius', function(_, args)
     TriggerServerEvent('PedInteraction:spawnpedradius', pedAmount)
 end)
 
--- Event handler for spawning Peds in a radius
-RegisterNetEvent('PedInteraction:spawnradius')
-AddEventHandler('PedInteraction:spawnradius', function(pedAmount)
-    local playerPed = PlayerPedId()
-    local spawnPos = GetEntityCoords(playerPed)
-    local radius = 10
-
-    EnsureModelIsLoaded(pedModels)
-
-    TriggerEvent('chat:addMessage' , {
-        args = {tostring(pedAmount).. ' peds spawning in a radius around player',}
-    })
-
-    for i = 1, pedAmount do
-        local angle = math.random() * 360
-        local radian = math.rad(angle)
-        local randomRadius = math.random() * radius
-        local offsetX = math.cos(radian) * randomRadius
-        local offsetY = math.sin(radian) * randomRadius
-        local spawnX = spawnPos.x + offsetX
-        local spawnY = spawnPos.y + offsetY
-        local spawnZ = spawnPos.z
-
-        local model = pedModels[math.random(#pedModels)]
-        local ped = CreatePed(0, model, spawnX, spawnY, spawnZ, 0, true, false)
-        SetPedRandomComponentVariation(ped, true)
-        SetPedAsNoLongerNeeded(ped)
-        SetModelAsNoLongerNeeded(model)
-    end
-end)
-
 ----------------------------------------------------------------------------------------------
 
 -- Explode all NPC Peds in a radius around the player
