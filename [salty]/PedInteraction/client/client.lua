@@ -18,6 +18,12 @@ function EnsureModelIsLoaded(models)
     end
 end
 
+function ShowMissionText(message, duration)
+    BeginTextCommandPrint('STRING')
+    AddTextComponentString(message)
+    EndTextCommandPrint(duration, true)
+end
+
 ----------------------------------------------------------------------------------------------
 
 -- Event for spawning peds
@@ -223,7 +229,6 @@ local isActive = false
 RegisterNetEvent('PedInteraction:debug')
 AddEventHandler('PedInteraction:debug', function(pedRadius)
     isActive = not isActive
-
     if isActive then
         TriggerEvent('chat:addMessage' , {
             args = {'Ped debug started',}
@@ -234,8 +239,8 @@ AddEventHandler('PedInteraction:debug', function(pedRadius)
                 local playerPed = PlayerPedId()
                 local playerPos = GetEntityCoords(playerPed)
                 local peds = GetGamePool('CPed')
-                local pedAmount = 1
-
+                local pedAmount = 0
+                
                 for i = 1, #peds do
                     local ped = peds[i]
 
@@ -249,9 +254,7 @@ AddEventHandler('PedInteraction:debug', function(pedRadius)
                     end
                 end
         
-                -- TriggerEvent('chat:addMessage' , {
-                --     args = {'Peds detected in radius: ' .. pedAmount,}
-                -- })
+                ShowMissionText('Peds detected in radius (~y~' .. pedRadius .. '~s~): ~r~' .. pedAmount .. '~s~', 50)
 
                 Wait(2)
             end
