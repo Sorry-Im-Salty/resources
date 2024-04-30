@@ -1,6 +1,6 @@
 local maxPeds = 100
 local deleteRange = 100
-local currentPeds = {}
+local currentSpawnedPeds = {}
 local pedModels = {
     `a_f_y_tourist_01`,
     `a_m_m_business_01`,
@@ -13,8 +13,8 @@ local pedModels = {
 }
 
 function PedDistanceDelete()
-    for i = #currentPeds, 1, -1 do
-        local ped = currentPeds[i]
+    for i = #currentSpawnedPeds, 1, -1 do
+        local ped = currentSpawnedPeds[i]
         if DoesEntityExist(ped) then
             local pedPos = GetEntityCoords(ped)
             local playerPed = PlayerPedId()
@@ -23,10 +23,10 @@ function PedDistanceDelete()
 
             if distance > deleteRange then
                 DeleteEntity(ped)
-                table.remove(currentPeds, i)
+                table.remove(currentSpawnedPeds, i)
             end
         else
-            table.remove(currentPeds, i)
+            table.remove(currentSpawnedPeds, i)
         end
     end
 end
@@ -67,10 +67,11 @@ RegisterNetEvent('PedInteraction:spawnped')
 AddEventHandler('PedInteraction:spawnped', function(x, y, z, heading)
     EnsureModelIsLoaded(pedModels)
 
-    if #currentPeds >= maxPeds then
-        local oldPed = table.remove(currentPeds, 1)
+    if #currentSpawnedPeds >= maxPeds then
+        local oldPed = table.remove(currentSpawnedPeds, 1)
         if DoesEntityExist(oldPed) then
             DeleteEntity(oldPed)
+            SetModelAsNoLongerNeeded(GetEntityModel(oldPed))
         end
     end
 
@@ -78,7 +79,7 @@ AddEventHandler('PedInteraction:spawnped', function(x, y, z, heading)
     local ped = CreatePed(0, model, x, y, z, heading, true, true)
     
     if DoesEntityExist(ped) then
-        table.insert(currentPeds, ped)
+        table.insert(currentSpawnedPeds, ped)
         SetPedRandomComponentVariation(ped, true)
         SetPedAsNoLongerNeeded(ped)
         SetModelAsNoLongerNeeded(model)
@@ -243,14 +244,12 @@ AddEventHandler('PedInteraction:ignite', function(pedRadius)
     local pedsToIgnite = {}
     local maxIgnitePeds = 100
     local igniteCount = 0
-    local batchSize = 30
-    local batchDelay = 200
 
     for i = 1, #peds do
         local ped = peds[i]
         local isDead = IsPedDeadOrDying(ped, false)
 
-        if ped ~= playerPed and not IsPedAPlayer(ped) and not isDead then
+        if ped ~= playerPed and not IsPedAPlayer(ped) and not isDead and not IsEntityOnFire(ped) then
             local pedPos = GetEntityCoords(ped)
             local distance = #(playerPos - pedPos)
             if distance <= pedRadius then
@@ -262,12 +261,14 @@ AddEventHandler('PedInteraction:ignite', function(pedRadius)
     table.sort(pedsToIgnite, function(a, b) return GetDistanceBetweenCoords(playerPos, GetEntityCoords(a), true) < GetDistanceBetweenCoords(playerPos, GetEntityCoords(b), true) end)
 
     CreateThread(function()
-        for i = 1, math.min(#pedsToIgnite, maxIgnitePeds) do
-            StartEntityFire(pedsToIgnite[i])
-            igniteCount = igniteCount + 1
-            if i % batchSize == 0 then
-                Wait(batchDelay)
+        local batchSize = 10
+        local batchDelay = 300
+        for i = 1, #pedsToIgnite, batchSize do
+            for j = i, math.min(i + batchSize - 1, #pedsToIgnite) do
+                StartEntityFire(pedsToIgnite[j])
+                igniteCount = igniteCount + 1
             end
+            Wait(batchDelay)
         end
     
         TriggerEvent('chat:addMessage' , {
@@ -309,14 +310,14 @@ AddEventHandler('PedInteraction:debug', function(pedRadius)
                 end
         
                 ShowMissionText('Peds detected in radius (~y~' .. pedRadius .. '~s~): ~r~' .. pedAmount .. '~s~', 50)
-                --ShowNotif('Current spawned ped count: ~r~' .. #currentPeds .. '~s~', 140, false, false)
+                --ShowNotif('Current spawned ped count: ~r~' .. #currentSpawnedPeds .. '~s~', 140, false, false)
                 Wait(2)
             end
         end)
 
         CreateThread(function()
             while isActive do
-                ShowNotif('Current spawned ped count: ~r~' .. #currentPeds .. '~s~', 140, false, false)
+                ShowNotif('Current spawned ped count: ~r~' .. #currentSpawnedPeds .. '~s~', 140, false, false)
                 Wait(10)
             end
         end)

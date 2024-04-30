@@ -67,7 +67,7 @@ RegisterNetEvent('PedInteraction:debugped', function(pedRadius)
     local radius = tonumber(pedRadius)
 
     if not radius then
-        radius = 100
+        radius = 500
     elseif radius < 10 then
         radius = 10
     elseif radius > 500 then
