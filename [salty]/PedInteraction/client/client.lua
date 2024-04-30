@@ -177,10 +177,7 @@ AddEventHandler('PedInteraction:explode', function(pedRadius)
             local distance = #(playerPos - pedPos)
             --print("Player Position: " .. tostring(playerPos) .. " | Ped Position: " .. tostring(pedPos) .. " | Distance: " .. tostring(distance))
             if distance <= pedRadius then
-                local xPos = pedPos.x
-                local yPos = pedPos.y
-                local zPos = pedPos.z
-                AddExplosion(xPos, yPos, zPos, 8, 2, true, false, 0)
+                AddExplosion(pedPos.x, pedPos.y, pedPos.z, 8, 2, true, false, 0)
                 SetEntityHealth(ped, 0)
                 explodeCount = explodeCount + 1
             end
