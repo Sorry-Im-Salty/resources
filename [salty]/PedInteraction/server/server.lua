@@ -66,7 +66,9 @@ RegisterNetEvent('PedInteraction:debugped', function(pedRadius)
     local playerId = source
     local radius = tonumber(pedRadius)
 
-    if not radius or radius < 10 then
+    if not radius then
+        radius = 100
+    elseif radius < 10 then
         radius = 10
     elseif radius > 500 then
         radius = 500

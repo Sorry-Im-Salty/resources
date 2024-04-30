@@ -1,3 +1,6 @@
+local maxPeds = 100
+local deleteRange = 100
+local currentPeds = {}
 local pedModels = {
     `a_f_y_tourist_01`,
     `a_m_m_business_01`,
@@ -8,6 +11,25 @@ local pedModels = {
     `a_m_o_soucent_03`,
     `a_m_y_runner_01`,
 }
+
+function PedDistanceDelete()
+    for i = #currentPeds, 1, -1 do
+        local ped = currentPeds[i]
+        if DoesEntityExist(ped) then
+            local pedPos = GetEntityCoords(ped)
+            local playerPed = PlayerPedId()
+            local playerPos = GetEntityCoords(playerPed)
+            local distance = #(playerPos - pedPos)
+
+            if distance > deleteRange then
+                DeleteEntity(ped)
+                table.remove(currentPeds, i)
+            end
+        else
+            table.remove(currentPeds, i)
+        end
+    end
+end
 
 function EnsureModelIsLoaded(models)
     for _, model in ipairs(models) do
@@ -24,26 +46,47 @@ function ShowMissionText(message, duration)
     EndTextCommandPrint(duration, true)
 end
 
+function ShowNotif(message, colour, flash, saveToBrief)
+    BeginTextCommandThefeedPost('STRING')
+    AddTextComponentSubstringPlayerName(message)
+    ThefeedNextPostBackgroundColor(colour)
+    EndTextCommandThefeedPostTicker(flash, saveToBrief)
+end
+
+CreateThread(function()
+    while true do
+       Wait(5000)
+       PedDistanceDelete()
+    end
+end)
+
 ----------------------------------------------------------------------------------------------
 
 -- Event for spawning peds
 RegisterNetEvent('PedInteraction:spawnped')
 AddEventHandler('PedInteraction:spawnped', function(x, y, z, heading)
-
     EnsureModelIsLoaded(pedModels)
+
+    if #currentPeds >= maxPeds then
+        local oldPed = table.remove(currentPeds, 1)
+        if DoesEntityExist(oldPed) then
+            DeleteEntity(oldPed)
+        end
+    end
 
     local model = pedModels[math.random(#pedModels)]
     local ped = CreatePed(0, model, x, y, z, heading, true, true)
     
-    if not DoesEntityExist(ped) then
+    if DoesEntityExist(ped) then
+        table.insert(currentPeds, ped)
+        SetPedRandomComponentVariation(ped, true)
+        SetPedAsNoLongerNeeded(ped)
+        SetModelAsNoLongerNeeded(model)
+    else 
         TriggerEvent('chat:addMessage' , {
             args = {'Ped creation failed',}
         })
     end
-
-    SetPedRandomComponentVariation(ped, true)
-    SetPedAsNoLongerNeeded(ped)
-    SetModelAsNoLongerNeeded(model)
 end)
 
 ----------------------------------------------------------------------------------------------
@@ -72,9 +115,9 @@ RegisterCommand('spawnpedline', function(_, args)
         return
     end
 
-    if pedAmount <= 0 or pedAmount >= 500 then
+    if pedAmount <= 0 or pedAmount > maxPeds then
         TriggerEvent('chat:addMessage', {
-            args = { 'Number of peds must be greater than 0 and less than 500', },
+            args = { 'Number of peds must be greater than 0 and less than ' .. maxPeds, },
         })
         return
     end 
@@ -95,9 +138,9 @@ RegisterCommand('spawnpedradius', function(_, args)
         return
     end 
 
-    if pedAmount <= 0 or pedAmount >= 500 then
+    if pedAmount <= 0 or pedAmount > maxPeds then
         TriggerEvent('chat:addMessage', {
-            args = { 'Number of peds must be greater than 0 and less than 500', },
+            args = { 'Number of peds must be greater than 0 and less than ' .. maxPeds, },
         })
         return
     end 
@@ -197,7 +240,11 @@ AddEventHandler('PedInteraction:ignite', function(pedRadius)
     local playerPed = PlayerPedId()
     local playerPos = GetEntityCoords(playerPed)
     local peds = GetGamePool('CPed')
+    local pedsToIgnite = {}
+    local maxIgnitePeds = 100
     local igniteCount = 0
+    local batchSize = 30
+    local batchDelay = 200
 
     for i = 1, #peds do
         local ped = peds[i]
@@ -206,17 +253,27 @@ AddEventHandler('PedInteraction:ignite', function(pedRadius)
         if ped ~= playerPed and not IsPedAPlayer(ped) and not isDead then
             local pedPos = GetEntityCoords(ped)
             local distance = #(playerPos - pedPos)
-
             if distance <= pedRadius then
-                StartEntityFire(ped)
-                igniteCount = igniteCount + 1
+                table.insert(pedsToIgnite, ped)
             end
         end
     end
 
-    TriggerEvent('chat:addMessage' , {
-        args = {igniteCount .. ' peds ignited',}
-    })
+    table.sort(pedsToIgnite, function(a, b) return GetDistanceBetweenCoords(playerPos, GetEntityCoords(a), true) < GetDistanceBetweenCoords(playerPos, GetEntityCoords(b), true) end)
+
+    CreateThread(function()
+        for i = 1, math.min(#pedsToIgnite, maxIgnitePeds) do
+            StartEntityFire(pedsToIgnite[i])
+            igniteCount = igniteCount + 1
+            if i % batchSize == 0 then
+                Wait(batchDelay)
+            end
+        end
+    
+        TriggerEvent('chat:addMessage' , {
+            args = {igniteCount .. ' peds ignited',}
+        })
+    end)
 end)
 
 ----------------------------------------------------------------------------------------------
@@ -237,7 +294,7 @@ AddEventHandler('PedInteraction:debug', function(pedRadius)
                 local playerPos = GetEntityCoords(playerPed)
                 local peds = GetGamePool('CPed')
                 local pedAmount = 0
-                
+
                 for i = 1, #peds do
                     local ped = peds[i]
 
@@ -252,8 +309,15 @@ AddEventHandler('PedInteraction:debug', function(pedRadius)
                 end
         
                 ShowMissionText('Peds detected in radius (~y~' .. pedRadius .. '~s~): ~r~' .. pedAmount .. '~s~', 50)
-
+                --ShowNotif('Current spawned ped count: ~r~' .. #currentPeds .. '~s~', 140, false, false)
                 Wait(2)
+            end
+        end)
+
+        CreateThread(function()
+            while isActive do
+                ShowNotif('Current spawned ped count: ~r~' .. #currentPeds .. '~s~', 140, false, false)
+                Wait(10)
             end
         end)
 
