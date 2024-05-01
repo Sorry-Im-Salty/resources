@@ -221,7 +221,6 @@ AddEventHandler('PedInteraction:explode', function(pedRadius)
         if ped ~= playerPed and not IsPedAPlayer(ped) and not isDead then
             local pedPos = GetEntityCoords(ped)
             local distance = #(playerPos - pedPos)
-            --print("Player Position: " .. tostring(playerPos) .. " | Ped Position: " .. tostring(pedPos) .. " | Distance: " .. tostring(distance))
             if distance <= pedRadius then
                 AddExplosion(pedPos.x, pedPos.y, pedPos.z, 8, 2, true, false, 0)
                 SetEntityHealth(ped, 0)
@@ -362,18 +361,22 @@ AddEventHandler('PedInteraction:god', function()
                     local currentTarget = GetMeleeTargetForPed(playerPed)
 
                     if currentTarget and DoesEntityExist(currentTarget) then
-                        if currentTarget ~= lastPlayerTarget or not lastTargetHit then
+                        if currentTarget ~= lastPlayerTarget then
                             lastPlayerTarget = currentTarget
                             lastTargetHit = false
+                        end
+
+                        if not lastTargetHit then
+                            Wait(500)
 
                             local status, error = pcall(function()
                                 local pedPos = GetEntityCoords(currentTarget)
                                 local playerPos = GetEntityCoords(playerPed)
                                 local dirVector = pedPos - playerPos
                                 local normalisedVector = NormaliseVector(dirVector)
-                            
+                                
                                 ApplyForceToEntity(currentTarget, 1, normalisedVector.x * 300, normalisedVector.y * 300, -normalisedVector.z * 250, 0, 0, 0, 0, false, true, true, false, true)
-                                Wait(400)
+                                Wait(30)
                                 SetPedToRagdoll(currentTarget, 1000, 2000, 0, false, false, false)
                                 lastTargetHit = true
                             end)
@@ -382,6 +385,9 @@ AddEventHandler('PedInteraction:god', function()
                                 print("Error applying force: " .. tostring(error))
                             end
                         end
+                    else
+                        lastPlayerTarget = nil
+                        lastTargetHit = false
                     end
                 else
                     lastPlayerTarget = nil
