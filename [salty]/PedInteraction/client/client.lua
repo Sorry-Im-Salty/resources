@@ -321,7 +321,7 @@ AddEventHandler('PedInteraction:debug', function(pedRadius)
         end)
     else
         local hideMessage = json.encode({type = 'display', display = false})
-        SendNUIMessage(hideMessage)
+        SendNuiMessage(hideMessage)
         TriggerEvent('chat:addMessage' , {
             args = {'Ped debug stopped',}
         })

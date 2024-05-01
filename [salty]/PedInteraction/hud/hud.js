@@ -1,20 +1,11 @@
 window.addEventListener('message', function(event) {
-    if (event.data.type === "updatePedCount") {
-        var pedNumberSpan = document.getElementById('pedNumber');
-        pedNumberSpan.innerText = event.data.count;
+    var pedCountText = document.getElementById('pedCount');
+    var pedNumberSpan = document.getElementById('pedNumber');
 
-        if (event.data.count > 50) {
-            pedNumberSpan.style.color = 'red';
-        } else {
-            pedNumberSpan.style.color = 'green';
-        }
-    } else if (event.data.type === "display") {
-        var pedCountText = document.getElementById('pedCount');
-        
-        if (event.data.display) {
-            pedCountText.style.display = 'block';
-        } else {
-            pedCountText.style.display = 'none';
-        }
+    if (event.data.type === "display") {
+        pedCountText.style.display = event.data.display ? 'block' : 'none';
+    } else if (event.data.type === "updatePedCount") {
+        pedNumberSpan.innerText = event.data.count;
+        pedNumberSpan.style.color = event.data.count > 50 ? 'red' : 'green';
     }
 });
