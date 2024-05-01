@@ -46,13 +46,6 @@ function ShowMissionText(message, duration)
     EndTextCommandPrint(duration, true)
 end
 
-function ShowNotif(message, colour, flash, saveToBrief)
-    BeginTextCommandThefeedPost('STRING')
-    AddTextComponentSubstringPlayerName(message)
-    ThefeedNextPostBackgroundColor(colour)
-    EndTextCommandThefeedPostTicker(flash, saveToBrief)
-end
-
 CreateThread(function()
     while true do
        Wait(5000)
@@ -285,9 +278,22 @@ RegisterNetEvent('PedInteraction:debug')
 AddEventHandler('PedInteraction:debug', function(pedRadius)
     isActive = not isActive
     if isActive then
+        local displayMessage = json.encode({type = 'display', display = true})
+        SendNuiMessage(displayMessage)
         TriggerEvent('chat:addMessage' , {
             args = {'Ped debug started',}
         })
+        
+        CreateThread(function()
+            while isActive do
+               local message = json.encode({
+                    type = "updatePedCount",
+                    count = #currentSpawnedPeds
+                })
+                SendNuiMessage(message)
+               Wait(100)
+            end
+        end)
 
         CreateThread(function()
             while isActive do
@@ -310,19 +316,12 @@ AddEventHandler('PedInteraction:debug', function(pedRadius)
                 end
         
                 ShowMissionText('Peds detected in radius (~y~' .. pedRadius .. '~s~): ~r~' .. pedAmount .. '~s~', 50)
-                --ShowNotif('Current spawned ped count: ~r~' .. #currentSpawnedPeds .. '~s~', 140, false, false)
                 Wait(2)
             end
         end)
-
-        CreateThread(function()
-            while isActive do
-                ShowNotif('Current spawned ped count: ~r~' .. #currentSpawnedPeds .. '~s~', 140, false, false)
-                Wait(10)
-            end
-        end)
-
     else
+        local hideMessage = json.encode({type = 'display', display = false})
+        SendNUIMessage(hideMessage)
         TriggerEvent('chat:addMessage' , {
             args = {'Ped debug stopped',}
         })
