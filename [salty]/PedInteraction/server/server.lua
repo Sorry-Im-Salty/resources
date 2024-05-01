@@ -79,16 +79,6 @@ end)
 
 ----------------------------------------------------------------------------------------------
 
--- Fling peds into the sky
-RegisterCommand('flingped', function(source, args, rawCommand)
-    local playerId = source
-    local radius = args[1]
-
-    TriggerClientEvent('PedInteraction:fling', playerId, radius)
-end, false)
-
-----------------------------------------------------------------------------------------------
-
 -- The hand of god
 RegisterCommand('handofgod', function(source, args, rawCommand)
     local playerId = source

@@ -338,65 +338,11 @@ end)
 
 ----------------------------------------------------------------------------------------------
 
--- Event for ragdolling Peds in a radius
-RegisterNetEvent('PedInteraction:fling')
-AddEventHandler('PedInteraction:fling', function(pedRadius)
-    local playerPed = PlayerPedId()
-    local playerPos = GetEntityCoords(playerPed)
-    local peds = GetGamePool('CPed')
-    local pedsToFling = {}
-    local flingCount = 0
-    local radius = tonumber(pedRadius)
-    local maxFlingPeds = 30
-
-    if not radius then
-        TriggerEvent('chat:addMessage', {
-            args = { 'Invalid radius. Please input a number', },
-        })
-        return
-    end
-
-    if radius <= 0 then
-        TriggerEvent('chat:addMessage', {
-            args = { 'Radius must be greater than 0', },
-        })
-        return
-    end 
-
-    for i = 1, #peds do
-        local ped = peds[i]
-        local isDead = IsPedDeadOrDying(ped, false)
-
-        if ped ~= playerPed and not IsPedAPlayer(ped) and not isDead then
-            local pedPos = GetEntityCoords(ped)
-            local distance = #(playerPos - pedPos)
-            if distance <= radius and #pedsToFling < maxFlingPeds then
-                table.insert(pedsToFling, ped)
-            end
-        end
-    end
-
-    CreateThread(function()
-        for i = 1, #pedsToFling do
-            if flingCount < maxPeds then
-                ApplyForceToEntity(pedsToFling[i], 3, 0, 0, 9700000000, 0, 0, 0, 0, false, true, true, false, true)
-                Wait(100)
-                SetPedToRagdoll(pedsToFling[i], 1000, 4000, 0, false, false, true)
-                flingCount = flingCount + 1
-            end
-        end
-    
-        TriggerEvent('chat:addMessage' , {
-            args = {flingCount .. ' peds sent to space',}
-        })
-    end)
-end)
-
-----------------------------------------------------------------------------------------------
-
 -- Event for the hand of god command
 local isHandOfGodActive = false
-local lastHealth = {}
+local updateInterval = 100
+local lastPlayerTarget = nil
+local lastTargetHit = false
 
 RegisterNetEvent('PedInteraction:god')
 AddEventHandler('PedInteraction:god', function()
@@ -409,32 +355,37 @@ AddEventHandler('PedInteraction:god', function()
 
         CreateThread(function()
             while isHandOfGodActive do
-                Wait(0)
+                Wait(updateInterval)
                 local playerPed = PlayerPedId()
-                local peds = GetGamePool('CPed')
 
-                for i = 1, #peds do
-                    local ped = peds[i]
-                    if ped ~= playerPed and not IsPedAPlayer(ped) then
-                       local health = GetEntityHealth(ped)
+                if IsPedInMeleeCombat(playerPed) then
+                    local currentTarget = GetMeleeTargetForPed(playerPed)
 
-                       if lastHealth[ped] == nil then
-                            lastHealth[ped] = health
-                       end
+                    if currentTarget and DoesEntityExist(currentTarget) then
+                        if currentTarget ~= lastPlayerTarget or not lastTargetHit then
+                            lastPlayerTarget = currentTarget
+                            lastTargetHit = false
 
-                       if health < lastHealth[ped] then
-                            print('Health decreased for Ped ', ped, ": from ", lastHealth[ped], ' to ', health)
-                            local pedPos = GetEntityCoords(ped)
-                            local playerPos = GetEntityCoords(playerPed)
-                            local dirVector = pedPos - playerPos
-                            local normalisedVector = NormaliseVector(dirVector)
+                            local status, error = pcall(function()
+                                local pedPos = GetEntityCoords(currentTarget)
+                                local playerPos = GetEntityCoords(playerPed)
+                                local dirVector = pedPos - playerPos
+                                local normalisedVector = NormaliseVector(dirVector)
+                            
+                                ApplyForceToEntity(currentTarget, 1, normalisedVector.x * 300, normalisedVector.y * 300, -normalisedVector.z * 250, 0, 0, 0, 0, false, true, true, false, true)
+                                Wait(400)
+                                SetPedToRagdoll(currentTarget, 1000, 2000, 0, false, false, false)
+                                lastTargetHit = true
+                            end)
 
-                            ApplyForceToEntity(ped, 1, normalisedVector.x * 300, normalisedVector.y * 300, 0, 0, 0, 0, 0, false, true, true, false, true)
-                            Wait(300)
-                            SetPedToRagdoll(ped, 1000, 2000, 0, false, false, false)
-                       end
-                       lastHealth[ped] = health
+                            if not status then
+                                print("Error applying force: " .. tostring(error))
+                            end
+                        end
                     end
+                else
+                    lastPlayerTarget = nil
+                    lastTargetHit = false
                 end
             end
         end)
@@ -442,6 +393,7 @@ AddEventHandler('PedInteraction:god', function()
         TriggerEvent('chat:addMessage' , {
             args = {'Hand of God Disabled',}
         })
-        lastHealth = {}
+        lastPlayerTarget = nil
+        lastTargetHit = false
     end
 end)
