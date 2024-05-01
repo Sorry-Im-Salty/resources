@@ -46,6 +46,15 @@ function ShowMissionText(message, duration)
     EndTextCommandPrint(duration, true)
 end
 
+function NormaliseVector(vector)
+    local length = math.sqrt(vector.x^2 + vector.y^2 + vector.z^2)
+    if length == 0 then
+        return vector3(0,0,0)
+    else
+       return vector3(vector.x / length, vector.y / length, vector.z / length)
+    end
+end
+
 CreateThread(function()
     while true do
        Wait(5000)
@@ -235,7 +244,6 @@ AddEventHandler('PedInteraction:ignite', function(pedRadius)
     local playerPos = GetEntityCoords(playerPed)
     local peds = GetGamePool('CPed')
     local pedsToIgnite = {}
-    local maxIgnitePeds = 100
     local igniteCount = 0
 
     for i = 1, #peds do
@@ -273,11 +281,11 @@ end)
 ----------------------------------------------------------------------------------------------
 
 -- Event for ped debug
-local isActive = false
+local isDebugActive = false
 RegisterNetEvent('PedInteraction:debug')
 AddEventHandler('PedInteraction:debug', function(pedRadius)
-    isActive = not isActive
-    if isActive then
+    isDebugActive = not isDebugActive
+    if isDebugActive then
         local displayMessage = json.encode({type = 'display', display = true})
         SendNuiMessage(displayMessage)
         TriggerEvent('chat:addMessage' , {
@@ -285,7 +293,7 @@ AddEventHandler('PedInteraction:debug', function(pedRadius)
         })
         
         CreateThread(function()
-            while isActive do
+            while isDebugActive do
                local message = json.encode({
                     type = "updatePedCount",
                     count = #currentSpawnedPeds
@@ -296,7 +304,7 @@ AddEventHandler('PedInteraction:debug', function(pedRadius)
         end)
 
         CreateThread(function()
-            while isActive do
+            while isDebugActive do
                 local playerPed = PlayerPedId()
                 local playerPos = GetEntityCoords(playerPed)
                 local peds = GetGamePool('CPed')
@@ -325,5 +333,115 @@ AddEventHandler('PedInteraction:debug', function(pedRadius)
         TriggerEvent('chat:addMessage' , {
             args = {'Ped debug stopped',}
         })
+    end
+end)
+
+----------------------------------------------------------------------------------------------
+
+-- Event for ragdolling Peds in a radius
+RegisterNetEvent('PedInteraction:fling')
+AddEventHandler('PedInteraction:fling', function(pedRadius)
+    local playerPed = PlayerPedId()
+    local playerPos = GetEntityCoords(playerPed)
+    local peds = GetGamePool('CPed')
+    local pedsToFling = {}
+    local flingCount = 0
+    local radius = tonumber(pedRadius)
+    local maxFlingPeds = 30
+
+    if not radius then
+        TriggerEvent('chat:addMessage', {
+            args = { 'Invalid radius. Please input a number', },
+        })
+        return
+    end
+
+    if radius <= 0 then
+        TriggerEvent('chat:addMessage', {
+            args = { 'Radius must be greater than 0', },
+        })
+        return
+    end 
+
+    for i = 1, #peds do
+        local ped = peds[i]
+        local isDead = IsPedDeadOrDying(ped, false)
+
+        if ped ~= playerPed and not IsPedAPlayer(ped) and not isDead then
+            local pedPos = GetEntityCoords(ped)
+            local distance = #(playerPos - pedPos)
+            if distance <= radius and #pedsToFling < maxFlingPeds then
+                table.insert(pedsToFling, ped)
+            end
+        end
+    end
+
+    CreateThread(function()
+        for i = 1, #pedsToFling do
+            if flingCount < maxPeds then
+                ApplyForceToEntity(pedsToFling[i], 3, 0, 0, 9700000000, 0, 0, 0, 0, false, true, true, false, true)
+                Wait(100)
+                SetPedToRagdoll(pedsToFling[i], 1000, 4000, 0, false, false, true)
+                flingCount = flingCount + 1
+            end
+        end
+    
+        TriggerEvent('chat:addMessage' , {
+            args = {flingCount .. ' peds sent to space',}
+        })
+    end)
+end)
+
+----------------------------------------------------------------------------------------------
+
+-- Event for the hand of god command
+local isHandOfGodActive = false
+local lastHealth = {}
+
+RegisterNetEvent('PedInteraction:god')
+AddEventHandler('PedInteraction:god', function()
+    isHandOfGodActive = not isHandOfGodActive
+    
+    if isHandOfGodActive then
+        TriggerEvent('chat:addMessage' , {
+            args = {'Hand of God Enabled',}
+        })
+
+        CreateThread(function()
+            while isHandOfGodActive do
+                Wait(0)
+                local playerPed = PlayerPedId()
+                local peds = GetGamePool('CPed')
+
+                for i = 1, #peds do
+                    local ped = peds[i]
+                    if ped ~= playerPed and not IsPedAPlayer(ped) then
+                       local health = GetEntityHealth(ped)
+
+                       if lastHealth[ped] == nil then
+                            lastHealth[ped] = health
+                       end
+
+                       if health < lastHealth[ped] then
+                            print('Health decreased for Ped ', ped, ": from ", lastHealth[ped], ' to ', health)
+                            local pedPos = GetEntityCoords(ped)
+                            local playerPos = GetEntityCoords(playerPed)
+                            local dirVector = pedPos - playerPos
+                            local normalisedVector = NormaliseVector(dirVector)
+
+                            ApplyForceToEntity(ped, 1, normalisedVector.x * 300, normalisedVector.y * 300, 0, 0, 0, 0, 0, false, true, true, false, true)
+                            Wait(300)
+                            SetPedToRagdoll(ped, 1000, 2000, 0, false, false, false)
+                       end
+                       lastHealth[ped] = health
+                    end
+                end
+            end
+        end)
+    else
+        TriggerEvent('chat:addMessage' , {
+            args = {'Hand of God Disabled',}
+        })
+        lastHealth = {}
     end
 end)
