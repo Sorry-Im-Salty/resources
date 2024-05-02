@@ -17,7 +17,9 @@ window.addEventListener('message', function(event) {
         handOfGodStatus.innerText = event.data.isActive ? 'Hand of God Enabled' : 'Hand of God Disabled';
         handOfGodStatus.style.display = 'block';
 
-        if (!event.data.isActive) {
+        if (event.data.isActive) {
+            handOfGodStatus.style.opacity = '1';
+        } else {
             setTimeout(function() {
                 handOfGodStatus.style.opacity = '0';
                 setTimeout(function() {

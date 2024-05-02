@@ -375,8 +375,8 @@ AddEventHandler('PedInteraction:god', function()
                                 local playerPos = GetEntityCoords(playerPed)
                                 local dirVector = pedPos - playerPos
                                 local normalisedVector = NormaliseVector(dirVector)
-                                
                                 ApplyForceToEntity(currentTarget, 1, normalisedVector.x * 300, normalisedVector.y * 300, -normalisedVector.z * 250, 0, 0, 0, 0, false, true, true, false, true)
+                                AddExplosion(pedPos.x, pedPos.y, pedPos.z, 18, 0, true, false, 0)
                                 Wait(30)
                                 SetPedToRagdoll(currentTarget, 1000, 2000, 0, false, false, false)
                                 lastTargetHit = true
