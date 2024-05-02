@@ -347,11 +347,12 @@ RegisterNetEvent('PedInteraction:god')
 AddEventHandler('PedInteraction:god', function()
     isHandOfGodActive = not isHandOfGodActive
     
-    if isHandOfGodActive then
-        TriggerEvent('chat:addMessage' , {
-            args = {'Hand of God Enabled',}
-        })
+    SendNUIMessage({
+        type = "toggleHandOfGod",
+        isActive = isHandOfGodActive
+    })
 
+    if isHandOfGodActive then
         CreateThread(function()
             while isHandOfGodActive do
                 Wait(updateInterval)
@@ -367,7 +368,7 @@ AddEventHandler('PedInteraction:god', function()
                         end
 
                         if not lastTargetHit then
-                            Wait(500)
+                            Wait(500) -- Delay so that a punch connects/almost connects before Applying Force.
 
                             local status, error = pcall(function()
                                 local pedPos = GetEntityCoords(currentTarget)
@@ -396,9 +397,6 @@ AddEventHandler('PedInteraction:god', function()
             end
         end)
     else
-        TriggerEvent('chat:addMessage' , {
-            args = {'Hand of God Disabled',}
-        })
         lastPlayerTarget = nil
         lastTargetHit = false
     end
