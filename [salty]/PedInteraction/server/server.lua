@@ -6,10 +6,9 @@ AddEventHandler('PedInteraction:spawnpedline', function(pedAmount, camHeading)
     local spawnPos = GetEntityCoords(GetPlayerPed(playerId))
 
     for i = 1, pedNumber do
-        local offsetX = math.sin(camHeading) * i
-        local offsetY = math.cos(camHeading) * i
+        local offsetX = math.sin(camHeading) * i -- Generates an offset based on the direction of the camera.
+        local offsetY = math.cos(camHeading) * i -- Generates an offset based on the direction of the camera.
 
-        --print("Offset X: " .. offsetX .. " Offset Y: " .. offsetY)
         TriggerClientEvent('PedInteraction:spawnped', playerId, spawnPos.x + offsetX, spawnPos.y - offsetY, spawnPos.z, camHeading)
     end
 
@@ -27,11 +26,11 @@ AddEventHandler('PedInteraction:spawnpedradius', function(pedAmount)
     local radius = 10
 
     for i = 1, pedNumber do
-        local angle = math.random() * 360
-        local radian = math.rad(angle)
-        local randomRadius = math.random() * radius
-        local offsetX = math.sin(radian) * randomRadius
-        local offsetY = math.cos(radian) * randomRadius
+        local angle = math.random() * 360 -- Generates a random angle in degrees.
+        local radian = math.rad(angle) -- Conversion from degrees to radians.
+        local randomRadius = math.random() * radius -- Converts to a random distance from the player within the specified radius.
+        local offsetX = math.sin(radian) * randomRadius -- Generates an offset based on the angle and distance.
+        local offsetY = math.cos(radian) * randomRadius -- Generates an offset based on the angle and distance.
   
         TriggerClientEvent('PedInteraction:spawnped', playerId, spawnPos.x + offsetX, spawnPos.y - offsetY, spawnPos.z, 0)
     end
@@ -82,5 +81,6 @@ end)
 -- The hand of god
 RegisterCommand('handofgod', function(source, args, rawCommand)
     local playerId = source
+    
     TriggerClientEvent('PedInteraction:god', playerId)
 end, false)
